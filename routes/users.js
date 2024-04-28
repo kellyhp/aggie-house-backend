@@ -14,12 +14,20 @@ router.get("/", async (req, res) => {
 });
 
 // add user to database
-router.get("/addUser", async (req, res) => {
+router.post("/addUser", async (req, res) => {
   const { name, profileImage, email, admin } = req.body
+  console.log(req)
   try {
-    User.insertOne({name, profileImage, phoneNumber: "", email, admin})
+      // Create a new time slot
+      const user = new User({
+        name,
+        profileImage,
+        email,
+        admin,
+      });
+      await user.save();
   } catch (err) {
-    res.status(500).json({ message: "Error adding user" });
+    res.status(500).json({ message: err});
   }
 })
 
