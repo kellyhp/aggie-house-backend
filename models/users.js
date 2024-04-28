@@ -9,10 +9,6 @@ const usersSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    phoneNumber: {
-        type: String,
-        default: null
-    },
     email: {
         type: String,
         required: true,
@@ -21,6 +17,14 @@ const usersSchema = new mongoose.Schema({
     admin: {
         type: Boolean,
         required: true,
+    },
+    levels: {
+        type: String,
+        default: "bronze"
+    },
+    volunteerHours: {
+        type: Number,
+        default: 0
     }
 });
 
