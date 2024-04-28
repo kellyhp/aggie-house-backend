@@ -5,6 +5,7 @@ const { default: mongoose } = require("mongoose");
 
 const usersRouter = require("./routes/users");
 const timeRouter = require("./routes/timeSlots");
+const availableRouter = require('./routes/availableTimeSlots');
 
 const PORT = process.env.PORT || 3001;
 
@@ -25,5 +26,6 @@ connect();
 app.use(express.json());
 app.use("/users", usersRouter);
 app.use("/timeSlots", timeRouter);
+app.use("/availableTimeSlots", availableRouter);
 
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));
