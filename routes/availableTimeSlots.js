@@ -44,35 +44,37 @@ router.post("/", async (req, res) => {
 // Delete a time slot
 router.delete("/:id", getTimeSlot, async (req, res) => {
     try {
-      const isVolunteerDeletion = req.query.volunteer === "true"; // Check if the deletion is by a volunteer
-  
-      await res.timeSlot.remove();
-  
-      // Check if the corresponding available time slot was marked as unavailable due to two sign-ups
-      const existingSignUps = await TimeSlot.countDocuments({
-        date: res.timeSlot.date,
-        startTime: res.timeSlot.startTime,
-        isSignedUp: true
-      });
-      const isAvailable = existingSignUps < 2;
-  
-      // Update the corresponding available time slot's availability status only if it's a volunteer deletion
-      if (isVolunteerDeletion) {
-        const availableTimeSlot = await AvailableTimeSlot.findOne({
-          date: res.timeSlot.date,
-          startTime: res.timeSlot.startTime
+        const isVolunteerDeletion = req.query.volunteer === "true"; // Check if the deletion is by a volunteer
+
+        // Remove the time slot
+        await res.timeSlot.remove();
+
+        // Check if the corresponding available time slot was marked as unavailable due to two sign-ups
+        const existingSignUps = await TimeSlot.countDocuments({
+            date: res.timeSlot.date,
+            startTime: res.timeSlot.startTime,
+            isSignedUp: true
         });
-        if (availableTimeSlot) {
-          availableTimeSlot.isAvailable = isAvailable;
-          await availableTimeSlot.save();
+        const isAvailable = existingSignUps < 2;
+
+        // Update the corresponding available time slot's availability status only if it's a volunteer deletion
+        if (isVolunteerDeletion) {
+            const availableTimeSlot = await AvailableTimeSlot.findOne({
+                date: res.timeSlot.date,
+                startTime: res.timeSlot.startTime
+            });
+            if (availableTimeSlot) {
+                availableTimeSlot.isAvailable = isAvailable;
+                await availableTimeSlot.save();
+            }
         }
-      }
-  
-      res.json({ message: "Time slot deleted" });
+
+        res.json({ message: "Time slot deleted" });
     } catch (err) {
-      res.status(500).json({ message: "Error deleting a time slot" });
+        console.error('Error deleting time slot:', err);
+        res.status(500).json({ message: "Error deleting time slot" });
     }
-  });
+});
   
   // Middleware function to get time slot by ID
   async function getTimeSlot(req, res, next) {
