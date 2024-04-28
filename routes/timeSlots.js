@@ -51,7 +51,7 @@ router.delete("/remove/:id", getTimeSlot, async (req, res) => {
         const { volunteer } = req.query;
 
         // Check if the user is removing themselves from the time slot
-        if (volunteer === "false") {
+        if (admin === "true") {
             // Delete the time slot
             await res.timeSlot.remove();
 
@@ -66,7 +66,6 @@ router.delete("/remove/:id", getTimeSlot, async (req, res) => {
         res.status(500).json({ message: "Error removing time slot" });
     }
 });
-
   
   // Add a time slot
   router.post("/add", async (req, res) => {

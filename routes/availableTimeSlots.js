@@ -44,8 +44,6 @@ router.post("/", async (req, res) => {
 // Delete a time slot
 router.delete("/:id", getTimeSlot, async (req, res) => {
     try {
-        const isVolunteerDeletion = req.query.volunteer === "true"; // Check if the deletion is by a volunteer
-
         // Remove the time slot
         await res.timeSlot.remove();
 
