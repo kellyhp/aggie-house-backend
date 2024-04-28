@@ -1,45 +1,69 @@
 const express = require("express");
 const router = express.Router();
 const TimeSlot = require("../models/timeSlots");
+const AvailableTimeSlot = require("../models/availableTimeSlots");
 
-// get all time slots
-router.get("/", async (req, res) => {
+// Get all available time slots
+router.get("/available", async (req, res) => {
   try {
-    const timeSlots = await TimeSlot.find();
-    res.json(timeSlots);
+    const availableTimeSlots = await AvailableTimeSlot.find({ isAvailable: true });
+    res.json(availableTimeSlots);
   } catch (err) {
-    res.status(500).json({ message: "Error getting all time slots" });
+    res.status(500).json({ message: "Error getting available time slots" });
   }
 });
 
-// add a time slot
-router.post("/", async (req, res) => {
-  const timeSlot = new TimeSlot({
-    userEmail: req.body.userEmail,
-    date: req.body.date,
-    startTime: req.body.startTime,
-    endTime: req.body.endTime
-  });
+// Add a time slot
+router.post("/add", async (req, res) => {
+  const { userEmail, name, date, startTime, endTime } = req.body;
 
   try {
-    const newTimeSlot = await timeSlot.save();
-    res.status(201).json(newTimeSlot);
+    // Check if the time slot is available
+    const existingTimeSlot = await AvailableTimeSlot.findOne({ date, startTime, isAvailable: true });
+    if (!existingTimeSlot) {
+      return res.status(400).json({ message: "Time slot is not available" });
+    }
+
+    // Create a new time slot
+    const timeSlot = new TimeSlot({
+      userEmail,
+      name,
+      date,
+      startTime,
+      endTime,
+      isSignedUp: true
+    });
+    await timeSlot.save();
+
+    // Update the available time slot to mark it as unavailable if two people have signed up
+    const existingSignUps = await TimeSlot.countDocuments({ date, startTime, isSignedUp: true });
+    existingTimeSlot.isAvailable = existingSignUps < 2;
+    await existingTimeSlot.save();
+
+    res.status(201).json(timeSlot);
   } catch (err) {
     res.status(400).json({ message: "Error adding a time slot" });
   }
 });
 
-// delete a time slot
-router.delete("/:id", getTimeSlot, async (req, res) => {
+// Delete a time slot
+router.delete("/remove/:id", getTimeSlot, async (req, res) => {
   try {
+    // Delete the time slot
     await res.timeSlot.remove();
-    res.json({ message: "Time slot deleted" });
+
+    // Update the corresponding available time slot to mark it as available again
+    const existingTimeSlot = await AvailableTimeSlot.findOne({ date: res.timeSlot.date, startTime: res.timeSlot.startTime });
+    existingTimeSlot.isAvailable = true;
+    await existingTimeSlot.save();
+
+    res.json({ message: "Time slot removed" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting time slot" });
+    res.status(500).json({ message: "Error removing time slot" });
   }
 });
 
-// get time slot by ID
+// Middleware function to get time slot by ID
 async function getTimeSlot(req, res, next) {
   let timeSlot;
   try {
@@ -54,32 +78,16 @@ async function getTimeSlot(req, res, next) {
   next();
 }
 
-// update a time slot
-router.put("/:id", getTimeSlot, async (req, res) => {
+// Get all time slots of a volunteer
+router.get("/my-time-slots", async (req, res) => {
+    const { userEmail, name } = req.query;
+  
     try {
-      res.timeSlot.userEmail = req.body.userEmail;
-      res.timeSlot.date = req.body.date;
-      res.timeSlot.startTime = req.body.startTime;
-      res.timeSlot.endTime = req.body.endTime;
-      await res.timeSlot.save();
-      res.json({ message: "Time slot updated" });
+      const timeSlots = await TimeSlot.find({ userEmail, name });
+      res.json(timeSlots);
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      res.status(500).json({ message: "Error getting time slots" });
     }
   });
-  
-
-// delete time slots older than 3 months
-router.delete("/older-than-three-months", async (req, res) => {
-  const threeMonthsAgo = new Date();
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-  try {
-    await TimeSlot.deleteMany({ date: { $lt: threeMonthsAgo } });
-    res.json({ message: "Time slots older than three months deleted" });
-  } catch (err) {
-    res.status(500).json({ message: "Error deleting time slots 3 months" });
-  }
-});
 
 module.exports = router;

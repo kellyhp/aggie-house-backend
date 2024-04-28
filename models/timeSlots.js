@@ -5,6 +5,10 @@ const timeSlotSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  name: {
+    type: String,
+    required: true
+  },
   date: {
     type: Date,
     required: true
@@ -16,6 +20,10 @@ const timeSlotSchema = new mongoose.Schema({
   endTime: {
     type: Date,
     required: true
+  },
+  isSignedUp: {
+    type: Boolean,
+    default: false
   }
 });
 

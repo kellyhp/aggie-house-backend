@@ -4,20 +4,20 @@ const usersSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
-      },
-      profileImage: {
+    },
+    profileImage: {
         type: String,
         default: null
-      },
-      phoneNumber: {
+    },
+    phoneNumber: {
         type: String,
         default: null
-      },
-      email: {
+    },
+    email: {
         type: String,
         required: true,
         unique: true
-      }
+    }
 });
 
 const Users = mongoose.model('users', usersSchema);
