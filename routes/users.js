@@ -12,6 +12,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+// add user to database
+router.get("/addUser", async (req, res) => {
+  const { name, profileImage, email, admin } = req.body
+  try {
+    User.insertOne({name, profileImage, phoneNumber: "", email, admin})
+  } catch (err) {
+    res.status(500).json({ message: "Error adding user" });
+  }
+})
+
 // delete a user
 router.delete("/:id", getUser, async (req, res) => {
   try {
