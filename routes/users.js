@@ -3,15 +3,15 @@ const router = express.Router();
 const User = require("../models/users");
 const TimeSlot = require("../models/timeSlots");
 
-// get all users
+// get all non-admin users
 router.get("/", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: "Error getting all users" });
-  }
-});
+    try {
+      const users = await User.find({ admin: false });
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ message: "Error getting non-admin users" });
+    }
+  });  
 
 // add user to database
 router.post("/addUser", async (req, res) => {
@@ -66,11 +66,11 @@ router.get("/leaderboard", async (req, res) => {
       // Calculate skip value for pagination
       const skip = (page - 1) * limit;
   
-      // Get total count of users
-      const totalCount = await User.countDocuments();
+      // Get total count of non-admin users
+      const totalCount = await User.countDocuments({ admin: false });
   
-      // Fetch users with pagination
-      const users = await User.find({}, 'name profileImage levels volunteerHours')
+      // Fetch non-admin users with pagination
+      const users = await User.find({ admin: false }, 'name profileImage levels volunteerHours')
                                 .skip(skip)
                                 .limit(limit)
                                 .exec();
