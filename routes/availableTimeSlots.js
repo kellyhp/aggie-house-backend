@@ -44,15 +44,7 @@ router.post("/", async (req, res) => {
 // Delete a time slot
 router.delete("/:id", getTimeSlot, async (req, res) => {
     try {
-        // Remove the time slot
         await res.timeSlot.remove();
-
-        // Delete the corresponding time slot entry from the TimeSlot collection, if it exists
-        await TimeSlot.deleteMany({
-            date: res.timeSlot.date,
-            startTime: res.timeSlot.startTime
-        });
-
         res.json({ message: "Time slot deleted" });
     } catch (err) {
         console.error('Error deleting time slot:', err);
@@ -74,5 +66,16 @@ router.delete("/:id", getTimeSlot, async (req, res) => {
     res.timeSlot = timeSlot;
     next();
   }
+
+  // New route to get all time slots from availableTimeSlots
+router.get("/all", async (req, res) => {
+    try {
+        const allTimeSlots = await AvailableTimeSlot.find();
+        res.json(allTimeSlots);
+    } catch (err) {
+        console.error('Error getting all time slots:', err);
+        res.status(500).json({ message: "Error getting all time slots" });
+    }
+});
 
 module.exports = router;
