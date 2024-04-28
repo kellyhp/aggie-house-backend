@@ -47,25 +47,11 @@ router.delete("/:id", getTimeSlot, async (req, res) => {
         // Remove the time slot
         await res.timeSlot.remove();
 
-        // Check if the corresponding available time slot was marked as unavailable due to two sign-ups
-        const existingSignUps = await TimeSlot.countDocuments({
+        // Delete the corresponding time slot entry from the TimeSlot collection, if it exists
+        await TimeSlot.deleteMany({
             date: res.timeSlot.date,
-            startTime: res.timeSlot.startTime,
-            isSignedUp: true
+            startTime: res.timeSlot.startTime
         });
-        const isAvailable = existingSignUps < 2;
-
-        // Update the corresponding available time slot's availability status only if it's a volunteer deletion
-        if (isVolunteerDeletion) {
-            const availableTimeSlot = await AvailableTimeSlot.findOne({
-                date: res.timeSlot.date,
-                startTime: res.timeSlot.startTime
-            });
-            if (availableTimeSlot) {
-                availableTimeSlot.isAvailable = isAvailable;
-                await availableTimeSlot.save();
-            }
-        }
 
         res.json({ message: "Time slot deleted" });
     } catch (err) {
