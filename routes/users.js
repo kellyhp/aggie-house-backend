@@ -26,6 +26,7 @@ router.post("/addUser", async (req, res) => {
         admin,
       });
       await user.save();
+      res.status(200).json({ message: "GOD JESUS CHRIST IT WORKS!!"});
   } catch (err) {
     res.status(500).json({ message: err});
   }
