@@ -5,29 +5,41 @@ const TimeSlot = require("../models/timeSlots");
 
 // Create a new available time slot
 router.post("/", async (req, res) => {
-  const { date, startTime, endTime } = req.body;
-
-  try {
-    // Check if there are already two sign-ups for the same time slot
-    const existingSignUps = await TimeSlot.countDocuments({
-      date,
-      startTime,
-      isSignedUp: true
-    });
-    const isAvailable = existingSignUps < 2;
-
-    const availableTimeSlot = new AvailableTimeSlot({
-      date,
-      startTime,
-      endTime,
-      isAvailable
-    });
-    await availableTimeSlot.save();
-    res.status(201).json(availableTimeSlot);
-  } catch (err) {
-    res.status(400).json({ message: "Error creating available time slot" });
-  }
-});
+    const { date, startTime, endTime, text, description } = req.body;
+  
+    try {
+      // Check if there are already two sign-ups for the same time slot
+      const existingSignUps = await TimeSlot.countDocuments({
+        date,
+        startTime,
+        isSignedUp: true
+      });
+      const isAvailable = existingSignUps < 2;
+  
+      const availableTimeSlot = new AvailableTimeSlot({
+        date,
+        startTime,
+        endTime,
+        isAvailable,
+        text,
+        description
+      });
+      await availableTimeSlot.save();
+      res.status(201).json(availableTimeSlot);
+    } catch (err) {
+      res.status(400).json({ message: "Error creating available time slot" });
+    }
+  });
+  
+  // Get all available time slots
+  router.get("/", async (req, res) => {
+    try {
+      const availableTimeSlots = await AvailableTimeSlot.find();
+      res.json(availableTimeSlots);
+    } catch (err) {
+      res.status(500).json({ message: "Error getting available time slots" });
+    }
+  });
 
 // Delete a time slot
 router.delete("/:id", getTimeSlot, async (req, res) => {
